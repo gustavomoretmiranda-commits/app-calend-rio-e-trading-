@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #12181b;
+  --color-surface: #1b2226;
+  --color-surface-2: #222b2f;
+  --color-surface-3: #2a3438;
+  --color-border: #2e383c;
+  --color-text: #ece8df;
+  --color-muted: #8a9499;
+  --color-accent: #4fa3a0;
+  --color-accent-2: #c97b4a;
+  --color-accent-3: #8e7ccc;
+  --color-accent-4: #d8b85c;
+  --color-accent-5: #6e9bc7;
+  --color-profit: #4fbf7f;
+  --color-loss: #e1685b;
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-2: var(--color-accent-2);
+  --color-accent-3: var(--color-accent-3);
+  --color-accent-4: var(--color-accent-4);
+  --color-accent-5: var(--color-accent-5);
+  --color-profit: var(--color-profit);
+  --color-loss: var(--color-loss);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+* {
+  scrollbar-color: var(--color-surface-3) var(--color-bg);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.modal-overlay[data-state="open"] {
+  animation: modalOverlayShow 150ms ease-out;
+}
+.modal-overlay[data-state="closed"] {
+  animation: modalOverlayHide 120ms ease-in;
+}
+.modal-content[data-state="open"] {
+  animation: modalContentShow 150ms ease-out;
+}
+.modal-content[data-state="closed"] {
+  animation: modalContentHide 120ms ease-in;
+}
+
+@keyframes modalOverlayShow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalOverlayHide {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modalContentShow {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes modalContentHide {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+}
