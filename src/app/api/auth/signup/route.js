@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyCredentials } from "@/lib/auth";
+import { createUser } from "@/lib/models/users";
 import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/session";
 
 export async function POST(request) {
@@ -15,15 +15,11 @@ export async function POST(request) {
     return NextResponse.json({ error: "Informe usuário e senha" }, { status: 400 });
   }
 
-  let user = null;
+  let user;
   try {
-    user = await verifyCredentials(username, password);
+    user = await createUser(username, password);
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-
-  if (!user) {
-    return NextResponse.json({ error: "Usuário ou senha inválidos" }, { status: 401 });
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
   const token = await createSessionToken(user.id, user.username);

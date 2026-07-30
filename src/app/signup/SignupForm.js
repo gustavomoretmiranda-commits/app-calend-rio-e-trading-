@@ -1,37 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lock, User, LogIn, CircleAlert } from "lucide-react";
+import { Lock, User, UserPlus, CircleAlert } from "lucide-react";
 
-export default function LoginForm() {
+export default function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Não foi possível entrar");
+        setError(data.error || "Não foi possível criar a conta");
         setLoading(false);
         return;
       }
-      router.replace(from);
+      router.replace("/");
       router.refresh();
     } catch {
       setError("Erro de conexão");
@@ -46,10 +51,10 @@ export default function LoginForm() {
     >
       <div className="flex flex-col items-center gap-2 mb-8">
         <div className="w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center text-accent">
-          <Lock size={22} />
+          <UserPlus size={22} />
         </div>
         <h1 className="font-mono text-lg font-semibold text-text">Rotina &amp; Trading</h1>
-        <p className="text-xs text-muted">Acesso restrito</p>
+        <p className="text-xs text-muted">Criar conta</p>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -77,8 +82,23 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="bg-transparent outline-none text-sm text-text w-full"
-              placeholder="senha"
-              autoComplete="current-password"
+              placeholder="senha (mín. 6 caracteres)"
+              autoComplete="new-password"
+            />
+          </div>
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-xs text-muted">
+          Confirmar senha
+          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus-within:border-accent transition-colors">
+            <Lock size={15} className="text-muted shrink-0" />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="bg-transparent outline-none text-sm text-text w-full"
+              placeholder="repita a senha"
+              autoComplete="new-password"
             />
           </div>
         </label>
@@ -95,14 +115,14 @@ export default function LoginForm() {
           disabled={loading}
           className="mt-2 flex items-center justify-center gap-2 bg-accent text-bg font-semibold text-sm rounded-lg py-2.5 hover:brightness-110 transition disabled:opacity-60"
         >
-          <LogIn size={16} />
-          {loading ? "Entrando..." : "Entrar"}
+          <UserPlus size={16} />
+          {loading ? "Criando..." : "Criar conta"}
         </button>
 
         <p className="text-center text-xs text-muted">
-          Não tem conta?{" "}
-          <Link href="/signup" className="text-accent hover:underline">
-            Criar conta
+          Já tem conta?{" "}
+          <Link href="/login" className="text-accent hover:underline">
+            Entrar
           </Link>
         </p>
       </div>

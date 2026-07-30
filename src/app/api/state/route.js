@@ -1,4 +1,4 @@
 import { handle } from "@/lib/api-handler";
 import { getFullState } from "@/lib/models/state";
 
-export const GET = handle(async () => getFullState());
+export const GET = handle(async (_request, { userId }) => getFullState(userId));

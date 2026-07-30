@@ -1,7 +1,7 @@
 import { handle } from "@/lib/api-handler";
 import { createEvent } from "@/lib/models/events";
 
-export const POST = handle(async (request) => {
+export const POST = handle(async (request, { userId }) => {
   const { date, time, label } = await request.json();
-  return createEvent(date, time, label);
+  return createEvent(userId, date, time, label);
 });

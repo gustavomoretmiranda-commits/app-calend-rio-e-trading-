@@ -1,13 +1,13 @@
 import { handle } from "@/lib/api-handler";
 import { toggleTagHighlight, deleteTag } from "@/lib/models/tags";
 
-export const PATCH = handle(async (_request, { params }) => {
+export const PATCH = handle(async (_request, { params, userId }) => {
   const { key } = await params;
-  return toggleTagHighlight(key);
+  return toggleTagHighlight(userId, key);
 });
 
-export const DELETE = handle(async (_request, { params }) => {
+export const DELETE = handle(async (_request, { params, userId }) => {
   const { key } = await params;
-  deleteTag(key);
+  deleteTag(userId, key);
   return { ok: true };
 });

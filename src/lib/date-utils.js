@@ -42,9 +42,9 @@ export function firstWeekday(y, m) {
   return new Date(y, m, 1).getDay();
 }
 
-export function fmtBRL(v) {
+export function fmtUSD(v) {
   const sign = v < 0 ? "-" : v > 0 ? "+" : "";
-  return sign + "R$ " + Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return sign + "US$ " + Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function fmtPct(value, balance) {

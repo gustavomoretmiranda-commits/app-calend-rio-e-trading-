@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/session";
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|login).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|login|signup).*)"],
 };
 
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/auth/login")) {
+  if (pathname.startsWith("/api/auth/login") || pathname.startsWith("/api/auth/signup")) {
     return NextResponse.next();
   }
 

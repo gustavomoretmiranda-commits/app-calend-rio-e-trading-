@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, LineChart, Pencil, Plus, X } from "lucide-react";
-import { MONTH_NAMES, WEEKDAY_HEAD, dateKey, todayKey, daysInMonth, firstWeekday, fmtBRL, fmtPct } from "@/lib/date-utils";
+import { MONTH_NAMES, WEEKDAY_HEAD, dateKey, todayKey, daysInMonth, firstWeekday, fmtUSD, fmtPct } from "@/lib/date-utils";
 import IconNavButton from "@/components/ui/IconNavButton";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -104,7 +104,7 @@ export default function TradingTab({ state, runMutation }) {
             className="flex items-center gap-1.5 text-xs text-muted hover:text-text border border-border rounded-full px-3 py-1.5 transition-colors"
             title="Editar saldo da conta"
           >
-            Saldo: {fmtBRL(acct.balance || 0)} <Pencil size={10} />
+            Saldo: {fmtUSD(acct.balance || 0)} <Pencil size={10} />
           </button>
         )}
         {acct && (
@@ -158,7 +158,7 @@ export default function TradingTab({ state, runMutation }) {
           <div className="flex gap-3 flex-wrap mb-4">
             <Stat
               label="Resultado do mês"
-              value={fmtBRL(monthTotal)}
+              value={fmtUSD(monthTotal)}
               sub={fmtPct(monthTotal, acct.balance)}
               color={monthTotal >= 0 ? "var(--color-profit)" : "var(--color-loss)"}
             />
@@ -201,7 +201,7 @@ export default function TradingTab({ state, runMutation }) {
                       className="font-mono text-[11px] font-semibold"
                       style={{ color: val > 0 ? "var(--color-profit)" : "var(--color-loss)" }}
                     >
-                      {fmtBRL(val)}
+                      {fmtUSD(val)}
                     </span>
                   )}
                 </button>

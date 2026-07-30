@@ -1,7 +1,7 @@
 import { handle } from "@/lib/api-handler";
 import { createWeeklyBlock } from "@/lib/models/weekly";
 
-export const POST = handle(async (request) => {
+export const POST = handle(async (request, { userId }) => {
   const { dayKey, period, start, tagKey, date } = await request.json();
-  return createWeeklyBlock(dayKey, period, start, tagKey, date);
+  return createWeeklyBlock(userId, dayKey, period, start, tagKey, date);
 });

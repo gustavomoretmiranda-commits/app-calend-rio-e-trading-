@@ -13,8 +13,8 @@ function getSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(username) {
-  return new SignJWT({ sub: username })
+export async function createSessionToken(userId, username) {
+  return new SignJWT({ sub: userId, username })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_MAX_AGE}s`)

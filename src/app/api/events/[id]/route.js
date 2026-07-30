@@ -1,8 +1,8 @@
 import { handle } from "@/lib/api-handler";
 import { deleteEvent } from "@/lib/models/events";
 
-export const DELETE = handle(async (_request, { params }) => {
+export const DELETE = handle(async (_request, { params, userId }) => {
   const { id } = await params;
-  deleteEvent(id);
+  deleteEvent(userId, id);
   return { ok: true };
 });

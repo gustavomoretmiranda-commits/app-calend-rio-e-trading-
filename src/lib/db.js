@@ -5,7 +5,7 @@ import fs from "node:fs";
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 
-const DEFAULT_TAGS = [
+export const DEFAULT_TAGS = [
   ["corrida", "Corrida", "#4fa3a0", 1],
   ["academia", "Academia", "#c97b4a", 1],
   ["estudo", "Estudo", "#8e7ccc", 0],
@@ -21,8 +21,43 @@ function addColumnIfMissing(db, table, column, definition) {
   }
 }
 
+function migrateLegacyUser(db) {
+  const { c: userCount } = db.prepare("SELECT COUNT(*) AS c FROM users").get();
+  if (userCount > 0) return;
+
+  const legacyTables = ["tag_config", "day_tags", "events", "weekly_blocks", "accounts", "strategies"];
+  const hasLegacyData = legacyTables.some(
+    (table) => db.prepare(`SELECT COUNT(*) AS c FROM ${table} WHERE user_id IS NULL`).get().c > 0
+  );
+  if (!hasLegacyData) return;
+
+  const username = process.env.AUTH_USERNAME;
+  const hashB64 = process.env.AUTH_PASSWORD_HASH_B64;
+  if (!username || !hashB64) return;
+
+  const passwordHash = Buffer.from(hashB64, "base64").toString("utf8");
+  const userId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  db.prepare("INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)").run(
+    userId,
+    username,
+    passwordHash,
+    new Date().toISOString()
+  );
+
+  for (const table of legacyTables) {
+    db.prepare(`UPDATE ${table} SET user_id = ? WHERE user_id IS NULL`).run(userId);
+  }
+}
+
 function migrate(db) {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS tag_config (
       key TEXT PRIMARY KEY,
       label TEXT NOT NULL,
@@ -91,16 +126,16 @@ function migrate(db) {
   addColumnIfMissing(db, "weekly_blocks", "date", "TEXT");
   addColumnIfMissing(db, "accounts", "balance", "REAL NOT NULL DEFAULT 0");
   addColumnIfMissing(db, "trade_items", "strategy_id", "TEXT");
+  addColumnIfMissing(db, "trade_items", "size", "REAL");
+  addColumnIfMissing(db, "trade_items", "time", "TEXT");
+  addColumnIfMissing(db, "tag_config", "user_id", "TEXT");
+  addColumnIfMissing(db, "day_tags", "user_id", "TEXT");
+  addColumnIfMissing(db, "events", "user_id", "TEXT");
+  addColumnIfMissing(db, "weekly_blocks", "user_id", "TEXT");
+  addColumnIfMissing(db, "accounts", "user_id", "TEXT");
+  addColumnIfMissing(db, "strategies", "user_id", "TEXT");
 
-  const { c } = db.prepare("SELECT COUNT(*) AS c FROM tag_config").get();
-  if (c === 0) {
-    const insert = db.prepare(
-      "INSERT INTO tag_config (key, label, color, highlight, sort_order) VALUES (?, ?, ?, ?, ?)"
-    );
-    DEFAULT_TAGS.forEach(([key, label, color, highlight], i) =>
-      insert.run(key, label, color, highlight, i)
-    );
-  }
+  migrateLegacyUser(db);
 
   const { c: itemCount } = db.prepare("SELECT COUNT(*) AS c FROM trade_items").get();
   if (itemCount === 0) {

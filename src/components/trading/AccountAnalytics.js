@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { fmtBRL, fmtPct, mondayOfWeek, addDays, formatShortDate } from "@/lib/date-utils";
+import { fmtUSD, fmtPct, mondayOfWeek, addDays, formatShortDate } from "@/lib/date-utils";
 import Stat from "./Stat";
 import Button from "@/components/ui/Button";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -12,6 +12,17 @@ const CHART_W = 600;
 const CHART_H = 140;
 const PAD_X = 10;
 const PAD_Y = 14;
+
+// Sessões em horário de Brasília (aproximado, sem considerar horário de verão EUA/Europa)
+const SESSIONS = [
+  { key: "asia", label: "Ásia (Tóquio)", color: "#8e7ccc", ranges: [[21, 24], [0, 6]] },
+  { key: "london", label: "Londres", color: "#4fa3a0", ranges: [[5, 14]] },
+  { key: "ny", label: "Nova York", color: "#c97b4a", ranges: [[10, 19]] },
+];
+
+function hourInSession(hour, session) {
+  return session.ranges.some(([a, b]) => hour >= a && hour < b);
+}
 
 export default function AccountAnalytics({ acct, acctEntries, acctItems, strategies, runMutation }) {
   const [strategyFilter, setStrategyFilter] = useState("all");
@@ -87,6 +98,35 @@ export default function AccountAnalytics({ acct, acctEntries, acctItems, strateg
 
   const recentItems = useMemo(() => filteredItems.slice().reverse().slice(0, 40), [filteredItems]);
 
+  const timedItems = useMemo(() => filteredItems.filter((it) => it.time), [filteredItems]);
+
+  const hourly = useMemo(() => {
+    const buckets = Array.from({ length: 24 }, (_, h) => ({ hour: h, total: 0, count: 0 }));
+    timedItems.forEach((it) => {
+      const h = parseInt(it.time.split(":")[0], 10);
+      if (Number.isNaN(h) || h < 0 || h > 23) return;
+      buckets[h].total += it.value;
+      buckets[h].count += 1;
+    });
+    return buckets;
+  }, [timedItems]);
+
+  const sessionStats = useMemo(() => {
+    return SESSIONS.map((s) => {
+      let total = 0;
+      let count = 0;
+      let pos = 0;
+      timedItems.forEach((it) => {
+        const h = parseInt(it.time.split(":")[0], 10);
+        if (Number.isNaN(h) || !hourInSession(h, s)) return;
+        total += it.value;
+        count += 1;
+        if (it.value > 0) pos += 1;
+      });
+      return { ...s, total, count, winRate: count > 0 ? (pos / count) * 100 : 0 };
+    });
+  }, [timedItems]);
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -151,23 +191,23 @@ export default function AccountAnalytics({ acct, acctEntries, acctItems, strateg
       ) : (
         <>
           <div className="flex gap-3 flex-wrap mb-4">
-            <Stat label="Saldo da conta" value={fmtBRL(balance)} color="var(--color-accent-5)" />
+            <Stat label="Saldo da conta" value={fmtUSD(balance)} color="var(--color-accent-5)" />
             <Stat
               label="Resultado total"
-              value={fmtBRL(stats.total)}
+              value={fmtUSD(stats.total)}
               sub={fmtPct(stats.total, balance)}
               color={stats.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"}
             />
             <Stat label="Taxa de acerto" value={`${stats.winRate.toFixed(0)}%`} color="var(--color-accent-5)" />
             <Stat
               label="Melhor dia"
-              value={stats.best ? fmtBRL(stats.best.value) : "—"}
+              value={stats.best ? fmtUSD(stats.best.value) : "—"}
               sub={stats.best ? fmtPct(stats.best.value, balance) : null}
               color="var(--color-profit)"
             />
             <Stat
               label="Pior dia"
-              value={stats.worst ? fmtBRL(stats.worst.value) : "—"}
+              value={stats.worst ? fmtUSD(stats.worst.value) : "—"}
               sub={stats.worst ? fmtPct(stats.worst.value, balance) : null}
               color="var(--color-loss)"
             />
@@ -185,6 +225,46 @@ export default function AccountAnalytics({ acct, acctEntries, acctItems, strateg
               Semanas positivas x negativas
             </div>
             <WeeklyBars weeks={weeks} balance={balance} />
+          </div>
+
+          <div className="bg-surface border border-border rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[10.5px] text-muted font-mono uppercase tracking-wide">
+                Resultado por horário (Brasília)
+              </div>
+              <div className="flex items-center gap-3">
+                {SESSIONS.map((s) => (
+                  <span key={s.key} className="flex items-center gap-1 text-[9.5px] text-muted">
+                    <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {timedItems.length === 0 ? (
+              <p className="text-xs text-muted py-6 text-center">
+                Nenhuma operação com horário registrado ainda. Preencha o horário ao adicionar novas operações
+                para ver esse gráfico preencher.
+              </p>
+            ) : (
+              <>
+                <HourlyChart hourly={hourly} />
+                <div className="flex gap-3 flex-wrap mt-4">
+                  {sessionStats.map((s) => (
+                    <Stat
+                      key={s.key}
+                      label={s.label}
+                      value={s.count > 0 ? fmtUSD(s.total) : "—"}
+                      sub={s.count > 0 ? `${s.count} op. · ${s.winRate.toFixed(0)}% acerto` : null}
+                      color={s.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"}
+                    />
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted mt-3">
+                  Horários de sessão aproximados (Brasília, sem ajuste de horário de verão dos EUA/Europa).
+                </p>
+              </>
+            )}
           </div>
 
           <div className="bg-surface border border-border rounded-lg p-4">
@@ -205,7 +285,7 @@ export default function AccountAnalytics({ acct, acctEntries, acctItems, strateg
                       className="font-mono font-semibold shrink-0"
                       style={{ color: it.value >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}
                     >
-                      {fmtBRL(it.value)}
+                      {fmtUSD(it.value)}
                       {pct && <span className="opacity-70"> ({pct})</span>}
                     </span>
                     {it.strategyId && (
@@ -278,33 +358,47 @@ function EquityCurve({ points, balance }) {
       ? `${linePath} L ${x(n - 1).toFixed(1)} ${yZero.toFixed(1)} L ${x(0).toFixed(1)} ${yZero.toFixed(1)} Z`
       : "";
   const last = points[n - 1];
+  const yTicks = Array.from(new Set([max, 0, min]));
 
   return (
-    <>
-      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-32" preserveAspectRatio="none">
-        <line x1={PAD_X} y1={yZero} x2={CHART_W - PAD_X} y2={yZero} stroke="var(--color-border)" strokeWidth="1" />
-        {areaPath && <path d={areaPath} fill="var(--color-accent)" opacity="0.1" />}
-        {n > 1 && (
-          <path
-            d={linePath}
-            fill="none"
-            stroke="var(--color-accent)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
-        {last && (
-          <circle cx={x(n - 1)} cy={y(last.value)} r="4" fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth="2">
-            <title>
-              {`${formatShortDate(last.date)}: ${fmtBRL(last.value)}`}
-              {fmtPct(last.value, balance) ? ` (${fmtPct(last.value, balance)})` : ""}
-            </title>
-          </circle>
-        )}
-      </svg>
-      <AxisLabels dates={points.map((p) => p.date)} />
-    </>
+    <div className="flex gap-2">
+      <div className="relative shrink-0 w-16 h-32">
+        {yTicks.map((t) => (
+          <span
+            key={t}
+            className="absolute right-1 -translate-y-1/2 text-[9.5px] font-mono text-muted whitespace-nowrap"
+            style={{ top: `${(y(t) / CHART_H) * 100}%` }}
+          >
+            {fmtUSD(t)}
+          </span>
+        ))}
+      </div>
+      <div className="flex-1 min-w-0">
+        <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-32" preserveAspectRatio="none">
+          <line x1={PAD_X} y1={yZero} x2={CHART_W - PAD_X} y2={yZero} stroke="var(--color-border)" strokeWidth="1" />
+          {areaPath && <path d={areaPath} fill="var(--color-accent)" opacity="0.1" />}
+          {n > 1 && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke="var(--color-accent)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          {last && (
+            <circle cx={x(n - 1)} cy={y(last.value)} r="4" fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth="2">
+              <title>
+                {`${formatShortDate(last.date)}: ${fmtUSD(last.value)}`}
+                {fmtPct(last.value, balance) ? ` (${fmtPct(last.value, balance)})` : ""}
+              </title>
+            </circle>
+          )}
+        </svg>
+        <AxisLabels dates={points.map((p) => p.date)} />
+      </div>
+    </div>
   );
 }
 
@@ -324,32 +418,115 @@ function WeeklyBars({ weeks, balance }) {
   const half = (CHART_H - PAD_Y * 2) / 2;
   const yZero = PAD_Y + half;
   const maxAbs = Math.max(1, ...weeks.map((w) => Math.abs(w.total)));
+  const yTicks = [maxAbs, 0, -maxAbs];
 
   return (
-    <>
-      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-32" preserveAspectRatio="none">
-        <line x1={PAD_X} y1={yZero} x2={CHART_W - PAD_X} y2={yZero} stroke="var(--color-border)" strokeWidth="1" />
-        {weeks.map((w, i) => {
-          const cx = PAD_X + slot * i + slot / 2;
-          const h = Math.max((Math.abs(w.total) / maxAbs) * (half - 4), 1);
-          const isPos = w.total >= 0;
-          const barY = isPos ? yZero - h : yZero;
-          const color = isPos ? "var(--color-profit)" : "var(--color-loss)";
-          return (
-            <path
-              key={w.start}
-              d={roundedBarPath(cx - barW / 2, barY, barW, h, isPos ? "top" : "bottom")}
-              fill={color}
-            >
-              <title>
-                {`${formatShortDate(w.start)} – ${formatShortDate(w.end)}: ${fmtBRL(w.total)}`}
-                {fmtPct(w.total, balance) ? ` (${fmtPct(w.total, balance)})` : ""}
-              </title>
-            </path>
-          );
-        })}
-      </svg>
-      <AxisLabels dates={weeks.map((w) => w.start)} />
-    </>
+    <div className="flex gap-2">
+      <div className="relative shrink-0 w-16 h-32">
+        {yTicks.map((t) => (
+          <span
+            key={t}
+            className="absolute right-1 -translate-y-1/2 text-[9.5px] font-mono text-muted whitespace-nowrap"
+            style={{ top: `${((yZero - (t / maxAbs) * half) / CHART_H) * 100}%` }}
+          >
+            {fmtUSD(t)}
+          </span>
+        ))}
+      </div>
+      <div className="flex-1 min-w-0">
+        <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-32" preserveAspectRatio="none">
+          <line x1={PAD_X} y1={yZero} x2={CHART_W - PAD_X} y2={yZero} stroke="var(--color-border)" strokeWidth="1" />
+          {weeks.map((w, i) => {
+            const cx = PAD_X + slot * i + slot / 2;
+            const h = Math.max((Math.abs(w.total) / maxAbs) * (half - 4), 1);
+            const isPos = w.total >= 0;
+            const barY = isPos ? yZero - h : yZero;
+            const color = isPos ? "var(--color-profit)" : "var(--color-loss)";
+            return (
+              <path
+                key={w.start}
+                d={roundedBarPath(cx - barW / 2, barY, barW, h, isPos ? "top" : "bottom")}
+                fill={color}
+              >
+                <title>
+                  {`${formatShortDate(w.start)} – ${formatShortDate(w.end)}: ${fmtUSD(w.total)}`}
+                  {fmtPct(w.total, balance) ? ` (${fmtPct(w.total, balance)})` : ""}
+                </title>
+              </path>
+            );
+          })}
+        </svg>
+        <AxisLabels dates={weeks.map((w) => w.start)} />
+      </div>
+    </div>
+  );
+}
+
+function HourlyChart({ hourly }) {
+  const n = 24;
+  const slot = (CHART_W - PAD_X * 2) / n;
+  const barW = Math.max(2, Math.min(18, slot - 3));
+  const half = (CHART_H - PAD_Y * 2) / 2;
+  const yZero = PAD_Y + half;
+  const maxAbs = Math.max(1, ...hourly.map((b) => Math.abs(b.total)));
+  const yTicks = [maxAbs, 0, -maxAbs];
+  const hourX = (h) => PAD_X + slot * h;
+
+  return (
+    <div className="flex gap-2">
+      <div className="relative shrink-0 w-16 h-32">
+        {yTicks.map((t) => (
+          <span
+            key={t}
+            className="absolute right-1 -translate-y-1/2 text-[9.5px] font-mono text-muted whitespace-nowrap"
+            style={{ top: `${((yZero - (t / maxAbs) * half) / CHART_H) * 100}%` }}
+          >
+            {fmtUSD(t)}
+          </span>
+        ))}
+      </div>
+      <div className="flex-1 min-w-0">
+        <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-32" preserveAspectRatio="none">
+          {SESSIONS.map((s) =>
+            s.ranges.map(([a, b], ri) => (
+              <rect
+                key={`${s.key}-${ri}`}
+                x={hourX(a)}
+                y={0}
+                width={hourX(b) - hourX(a)}
+                height={CHART_H}
+                fill={s.color}
+                opacity="0.1"
+              />
+            ))
+          )}
+          <line x1={PAD_X} y1={yZero} x2={CHART_W - PAD_X} y2={yZero} stroke="var(--color-border)" strokeWidth="1" />
+          {hourly.map((b) => {
+            if (b.count === 0) return null;
+            const h = Math.max((Math.abs(b.total) / maxAbs) * (half - 4), 1);
+            const isPos = b.total >= 0;
+            const barY = isPos ? yZero - h : yZero;
+            const color = isPos ? "var(--color-profit)" : "var(--color-loss)";
+            const cx = hourX(b.hour) + slot / 2;
+            return (
+              <path
+                key={b.hour}
+                d={roundedBarPath(cx - barW / 2, barY, barW, h, isPos ? "top" : "bottom")}
+                fill={color}
+              >
+                <title>
+                  {`${String(b.hour).padStart(2, "0")}h: ${fmtUSD(b.total)} (${b.count} op.)`}
+                </title>
+              </path>
+            );
+          })}
+        </svg>
+        <div className="flex justify-between text-[9.5px] font-mono text-muted mt-1.5 px-0.5">
+          {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+            <span key={h}>{String(h).padStart(2, "0")}h</span>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
