@@ -11,12 +11,12 @@ function seedDefaultTags(db, userId) {
 }
 
 export async function createUser(username, password) {
-  const clean = String(username || "").trim();
+  const clean = String(username || "").trim().toLowerCase();
   if (!clean) throw new Error("Usuário é obrigatório");
   if (!password || password.length < 6) throw new Error("Senha deve ter pelo menos 6 caracteres");
 
   const db = getDb();
-  const existing = db.prepare("SELECT 1 FROM users WHERE username = ?").get(clean);
+  const existing = db.prepare("SELECT 1 FROM users WHERE LOWER(username) = ?").get(clean);
   if (existing) throw new Error("Esse usuário já existe");
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -31,8 +31,9 @@ export async function createUser(username, password) {
 }
 
 export async function verifyUserCredentials(username, password) {
+  const clean = String(username || "").trim().toLowerCase();
   const db = getDb();
-  const user = db.prepare("SELECT id, username, password_hash AS passwordHash FROM users WHERE username = ?").get(username);
+  const user = db.prepare("SELECT id, username, password_hash AS passwordHash FROM users WHERE LOWER(username) = ?").get(clean);
   if (!user) return null;
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return null;

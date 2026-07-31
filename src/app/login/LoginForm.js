@@ -64,6 +64,9 @@ export default function LoginForm() {
               className="bg-transparent outline-none text-sm text-text w-full"
               placeholder="usuário"
               autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
           </div>
         </label>
