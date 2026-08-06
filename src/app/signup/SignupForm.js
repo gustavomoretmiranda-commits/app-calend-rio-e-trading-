@@ -47,7 +47,7 @@ export default function SignupForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-sm bg-surface border border-border rounded-xl p-8 shadow-2xl shadow-black/30"
+      className="w-full max-w-sm bg-surface border border-border rounded-[28px] p-8 shadow-2xl shadow-black/30"
     >
       <div className="flex flex-col items-center gap-2 mb-8">
         <div className="w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center text-accent">
@@ -60,7 +60,7 @@ export default function SignupForm() {
       <div className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-xs text-muted">
           Usuário
-          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus-within:border-accent transition-colors">
+          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-2xl px-3 py-2.5 focus-within:border-accent transition-colors">
             <User size={15} className="text-muted shrink-0" />
             <input
               autoFocus
@@ -78,7 +78,7 @@ export default function SignupForm() {
 
         <label className="flex flex-col gap-1.5 text-xs text-muted">
           Senha
-          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus-within:border-accent transition-colors">
+          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-2xl px-3 py-2.5 focus-within:border-accent transition-colors">
             <Lock size={15} className="text-muted shrink-0" />
             <input
               type="password"
@@ -93,7 +93,7 @@ export default function SignupForm() {
 
         <label className="flex flex-col gap-1.5 text-xs text-muted">
           Confirmar senha
-          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus-within:border-accent transition-colors">
+          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-2xl px-3 py-2.5 focus-within:border-accent transition-colors">
             <Lock size={15} className="text-muted shrink-0" />
             <input
               type="password"
@@ -107,7 +107,7 @@ export default function SignupForm() {
         </label>
 
         {error && (
-          <div className="flex items-center gap-2 text-xs text-loss bg-loss/10 border border-loss/30 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-loss bg-loss/10 border border-loss/30 rounded-xl px-3 py-2">
             <CircleAlert size={14} className="shrink-0" />
             {error}
           </div>
@@ -116,7 +116,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 flex items-center justify-center gap-2 bg-accent text-bg font-semibold text-sm rounded-lg py-2.5 hover:brightness-110 transition disabled:opacity-60"
+          className="mt-2 flex items-center justify-center gap-2 bg-accent text-bg font-semibold text-sm rounded-full py-2.5 hover:brightness-110 transition disabled:opacity-60"
         >
           <UserPlus size={16} />
           {loading ? "Criando..." : "Criar conta"}

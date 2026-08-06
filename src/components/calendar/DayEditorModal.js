@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2, X } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import { formatDateLabel } from "@/lib/date-utils";
@@ -9,6 +9,7 @@ import { formatDateLabel } from "@/lib/date-utils";
 export default function DayEditorModal({ open, onOpenChange, date, state, runMutation }) {
   const [time, setTime] = useState("");
   const [label, setLabel] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
   const { tagConfig, dayTags, events } = state;
   const activeTags = dayTags[date] || [];
@@ -19,14 +20,32 @@ export default function DayEditorModal({ open, onOpenChange, date, state, runMut
     await runMutation("/api/day-tags", { method: "POST", body: { date, tagKey, active: !active } });
   }
 
-  async function addEvent() {
+  function startEdit(ev) {
+    setEditingId(ev.id);
+    setTime(ev.time || "");
+    setLabel(ev.label);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setTime("");
+    setLabel("");
+  }
+
+  async function saveEvent() {
     if (!label.trim()) return;
-    await runMutation("/api/events", { method: "POST", body: { date, time, label: label.trim() } });
+    if (editingId) {
+      await runMutation(`/api/events/${editingId}`, { method: "PATCH", body: { date, time, label: label.trim() } });
+      setEditingId(null);
+    } else {
+      await runMutation("/api/events", { method: "POST", body: { date, time, label: label.trim() } });
+    }
     setTime("");
     setLabel("");
   }
 
   async function removeEvent(id) {
+    if (editingId === id) cancelEdit();
     await runMutation(`/api/events/${id}`, { method: "DELETE" });
   }
 
@@ -58,13 +77,26 @@ export default function DayEditorModal({ open, onOpenChange, date, state, runMut
       <div className="flex flex-col gap-1.5 mb-4">
         {dayEvents.length === 0 && <p className="text-xs text-muted py-2">Nenhum evento adicionado ainda.</p>}
         {dayEvents.map((ev) => (
-          <div key={ev.id} className="flex items-center gap-2.5 bg-surface-2 rounded-md px-3 py-2 text-xs">
+          <button
+            key={ev.id}
+            onClick={() => startEdit(ev)}
+            className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs text-left transition-colors ${
+              editingId === ev.id ? "bg-accent/15 border border-accent" : "bg-surface-2 border border-transparent hover:border-border"
+            }`}
+          >
             <span className="font-mono text-accent-4 min-w-[42px]">{ev.time || "--:--"}</span>
             <span className="flex-1">{ev.label}</span>
-            <button onClick={() => removeEvent(ev.id)} className="text-muted hover:text-loss transition-colors">
+            <span
+              role="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeEvent(ev.id);
+              }}
+              className="text-muted hover:text-loss transition-colors flex items-center"
+            >
               <Trash2 size={13} />
-            </button>
-          </div>
+            </span>
+          </button>
         ))}
       </div>
 
@@ -73,18 +105,24 @@ export default function DayEditorModal({ open, onOpenChange, date, state, runMut
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          className="font-mono sm:w-[110px] bg-surface-2 border border-border rounded-md px-2.5 py-2 text-xs outline-none focus:border-accent"
+          className="font-mono sm:w-[110px] bg-surface-2 border border-border rounded-xl px-2.5 py-2 text-xs outline-none focus:border-accent"
         />
         <input
           type="text"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addEvent()}
+          onKeyDown={(e) => e.key === "Enter" && saveEvent()}
           placeholder="Ex: Estudar edital, dentista, mercado..."
-          className="flex-1 bg-surface-2 border border-border rounded-md px-2.5 py-2 text-xs outline-none focus:border-accent"
+          className="flex-1 bg-surface-2 border border-border rounded-xl px-2.5 py-2 text-xs outline-none focus:border-accent"
         />
-        <Button onClick={addEvent}>
-          <Plus size={13} /> Adicionar
+        {editingId && (
+          <Button variant="ghost" onClick={cancelEdit}>
+            <X size={13} /> Cancelar
+          </Button>
+        )}
+        <Button onClick={saveEvent}>
+          {editingId ? <Check size={13} /> : <Plus size={13} />}
+          {editingId ? "Salvar" : "Adicionar"}
         </Button>
       </div>
     </Modal>

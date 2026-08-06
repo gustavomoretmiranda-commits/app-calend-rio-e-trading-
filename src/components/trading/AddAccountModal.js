@@ -43,7 +43,7 @@ export default function AddAccountModal({ open, onOpenChange, runMutation, onCre
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
         placeholder="Nome da conta"
-        className="w-full bg-surface-2 border border-border rounded-md px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
+        className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
       />
       <input
         type="number"
@@ -52,7 +52,7 @@ export default function AddAccountModal({ open, onOpenChange, runMutation, onCre
         onChange={(e) => setBalance(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
         placeholder="Saldo inicial (R$, opcional)"
-        className="w-full font-mono bg-surface-2 border border-border rounded-md px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
+        className="w-full font-mono bg-surface-2 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
       />
       {error && <p className="text-xs text-loss mb-2">{error}</p>}
       <div className="flex justify-end gap-2 mt-3">

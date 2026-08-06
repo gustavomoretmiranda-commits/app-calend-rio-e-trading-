@@ -48,7 +48,7 @@ export default function AddBlockModal({ open, onOpenChange, target, tagConfig, r
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            className="font-mono bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+            className="font-mono bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
           />
         </label>
         <label className="flex flex-col gap-1.5 text-xs text-muted">
@@ -56,7 +56,7 @@ export default function AddBlockModal({ open, onOpenChange, target, tagConfig, r
           <select
             value={tagKey}
             onChange={(e) => setTagKey(e.target.value)}
-            className="bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+            className="bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
           >
             <option value="">Selecione...</option>
             {tagConfig.map((cfg) => (

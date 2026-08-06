@@ -90,6 +90,20 @@ function migrate(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_weekly_day ON weekly_blocks(day_key);
 
+    CREATE TABLE IF NOT EXISTS weekly_completions (
+      block_id TEXT NOT NULL REFERENCES weekly_blocks(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      user_id TEXT,
+      PRIMARY KEY (block_id, date)
+    );
+
+    CREATE TABLE IF NOT EXISTS weekly_skips (
+      block_id TEXT NOT NULL REFERENCES weekly_blocks(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      user_id TEXT,
+      PRIMARY KEY (block_id, date)
+    );
+
     CREATE TABLE IF NOT EXISTS accounts (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,

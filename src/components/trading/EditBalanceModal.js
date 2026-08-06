@@ -38,7 +38,7 @@ export default function EditBalanceModal({ open, onOpenChange, account, runMutat
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && save()}
         placeholder="0,00"
-        className="w-full font-mono bg-surface-2 border border-border rounded-md px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
+        className="w-full font-mono bg-surface-2 border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent mb-2"
       />
       <div className="flex justify-end gap-2 mt-3">
         <Button variant="ghost" onClick={() => onOpenChange(false)}>

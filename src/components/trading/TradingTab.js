@@ -108,10 +108,10 @@ export default function TradingTab({ state, runMutation }) {
           </button>
         )}
         {acct && (
-          <div className="flex gap-1 ml-auto bg-surface-2 border border-border rounded-lg p-0.5">
+          <div className="flex gap-1 ml-auto bg-surface-2 border border-border rounded-full p-0.5">
             <button
               onClick={() => setViewMode("calendar")}
-              className={`px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+              className={`px-2.5 py-1.5 rounded-full text-xs transition-colors ${
                 viewMode === "calendar" ? "bg-accent text-bg" : "text-muted hover:text-text"
               }`}
             >
@@ -119,7 +119,7 @@ export default function TradingTab({ state, runMutation }) {
             </button>
             <button
               onClick={() => setViewMode("analytics")}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs transition-colors ${
                 viewMode === "analytics" ? "bg-accent text-bg" : "text-muted hover:text-text"
               }`}
             >
@@ -189,7 +189,7 @@ export default function TradingTab({ state, runMutation }) {
                   key={key}
                   onClick={() => setEntryDate(key)}
                   style={{ background: bg }}
-                  className={`min-h-[62px] flex flex-col justify-between text-left bg-surface border rounded-lg p-1.5 hover:border-accent transition-colors ${
+                  className={`min-h-[62px] flex flex-col justify-between text-left bg-surface border rounded-xl p-1.5 hover:border-accent transition-colors ${
                     isToday ? "border-accent" : "border-border"
                   }`}
                 >

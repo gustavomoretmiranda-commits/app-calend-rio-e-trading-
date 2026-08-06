@@ -16,7 +16,7 @@ export default function Modal({ open, onOpenChange, title, description, children
       <Dialog.Portal>
         <Dialog.Overlay className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40" />
         <Dialog.Content
-          className={`modal-content fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] ${SIZES[size]} bg-surface border border-border rounded-xl shadow-2xl shadow-black/40 z-50 max-h-[85vh] flex flex-col outline-none`}
+          className={`modal-content fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] ${SIZES[size]} bg-surface border border-border rounded-[28px] shadow-2xl shadow-black/40 z-50 max-h-[85vh] flex flex-col outline-none overflow-hidden`}
         >
           <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3 border-b border-border">
             <div>

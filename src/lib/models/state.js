@@ -1,6 +1,6 @@
 import { listTags, listDayTags } from "@/lib/models/tags";
 import { listEvents } from "@/lib/models/events";
-import { listWeekly } from "@/lib/models/weekly";
+import { listWeekly, listWeeklyCompletions, listWeeklySkips } from "@/lib/models/weekly";
 import { listAccounts } from "@/lib/models/accounts";
 import { listEntries, listTradeItems } from "@/lib/models/entries";
 import { listStrategies } from "@/lib/models/strategies";
@@ -11,6 +11,8 @@ export function getFullState(userId) {
     dayTags: listDayTags(userId),
     events: listEvents(userId),
     weekly: listWeekly(userId),
+    weeklyCompletions: listWeeklyCompletions(userId),
+    weeklySkips: listWeeklySkips(userId),
     accounts: listAccounts(userId),
     entries: listEntries(userId),
     tradeItems: listTradeItems(userId),

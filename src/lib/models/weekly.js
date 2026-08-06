@@ -44,3 +44,64 @@ export function deleteWeeklyBlock(userId, id) {
   const result = db.prepare("DELETE FROM weekly_blocks WHERE id = ? AND user_id = ?").run(id, userId);
   if (result.changes === 0) throw new Error("Bloco não encontrado");
 }
+
+export function listWeeklyCompletions(userId) {
+  const db = getDb();
+  return db
+    .prepare("SELECT block_id AS blockId, date FROM weekly_completions WHERE user_id = ?")
+    .all(userId)
+    .map((r) => `${r.blockId}|${r.date}`);
+}
+
+export function toggleWeeklyCompletion(userId, blockId, date) {
+  if (!date) throw new Error("Data é obrigatória");
+  const db = getDb();
+  const block = db.prepare("SELECT 1 FROM weekly_blocks WHERE id = ? AND user_id = ?").get(blockId, userId);
+  if (!block) throw new Error("Bloco não encontrado");
+
+  const existing = db.prepare("SELECT 1 FROM weekly_completions WHERE block_id = ? AND date = ?").get(blockId, date);
+  if (existing) {
+    db.prepare("DELETE FROM weekly_completions WHERE block_id = ? AND date = ?").run(blockId, date);
+    return { blockId, date, completed: false };
+  }
+  db.prepare("INSERT INTO weekly_completions (block_id, date, user_id) VALUES (?, ?, ?)").run(blockId, date, userId);
+  return { blockId, date, completed: true };
+}
+
+export function listWeeklySkips(userId) {
+  const db = getDb();
+  return db
+    .prepare("SELECT block_id AS blockId, date FROM weekly_skips WHERE user_id = ?")
+    .all(userId)
+    .map((r) => `${r.blockId}|${r.date}`);
+}
+
+export function moveWeeklyOccurrence(userId, blockId, fromDate, { dayKey, period, start, date }) {
+  if (!WEEK_DAY_KEYS.includes(dayKey)) throw new Error("Dia da semana inválido");
+  if (!PERIOD_KEYS.includes(period)) throw new Error("Período inválido");
+  if (!date) throw new Error("Data de destino é obrigatória");
+
+  const db = getDb();
+  const block = db
+    .prepare("SELECT day_key AS dayKey, period, start_time AS start, tag_key AS tagKey, date FROM weekly_blocks WHERE id = ? AND user_id = ?")
+    .get(blockId, userId);
+  if (!block) throw new Error("Bloco não encontrado");
+
+  const nextStart = start || block.start;
+
+  if (block.date) {
+    db.prepare(
+      "UPDATE weekly_blocks SET day_key = ?, period = ?, start_time = ?, date = ? WHERE id = ? AND user_id = ?"
+    ).run(dayKey, period, nextStart, date, blockId, userId);
+    return { id: blockId, dayKey, period, start: nextStart, tagKey: block.tagKey, date };
+  }
+
+  if (fromDate) {
+    db.prepare("INSERT OR IGNORE INTO weekly_skips (block_id, date, user_id) VALUES (?, ?, ?)").run(
+      blockId,
+      fromDate,
+      userId
+    );
+  }
+  return createWeeklyBlock(userId, dayKey, period, nextStart, block.tagKey, date);
+}

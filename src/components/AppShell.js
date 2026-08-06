@@ -68,13 +68,13 @@ export default function AppShell() {
         </div>
       </header>
 
-      <nav className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
+      <nav className="flex gap-1 bg-surface-2 border border-border rounded-full p-1 mb-6 overflow-x-auto">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-mono border-b-2 transition-colors whitespace-nowrap ${
-              tab === key ? "border-accent text-accent" : "border-transparent text-muted hover:text-text"
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-mono transition-colors whitespace-nowrap ${
+              tab === key ? "bg-accent text-bg" : "text-muted hover:text-text"
             }`}
           >
             <Icon size={15} />

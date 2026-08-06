@@ -46,7 +46,7 @@ export default function TradeEntryModal({ open, onOpenChange, date, accountId, i
           return (
             <div
               key={it.id}
-              className="flex items-center gap-2 bg-surface-2 rounded-md px-2.5 py-2 text-xs"
+              className="flex items-center gap-2 bg-surface-2 rounded-xl px-2.5 py-2 text-xs"
             >
               <span
                 className="font-mono font-semibold shrink-0"
@@ -104,7 +104,7 @@ export default function TradeEntryModal({ open, onOpenChange, date, accountId, i
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             placeholder="0,00"
-            className="w-24 font-mono bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-24 font-mono bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
           />
           <input
             type="number"
@@ -114,14 +114,14 @@ export default function TradeEntryModal({ open, onOpenChange, date, accountId, i
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             placeholder="Lote"
             title="Tamanho do lote"
-            className="w-20 font-mono bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-20 font-mono bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
           />
           <input
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
             title="Horário (Brasília)"
-            className="w-[105px] font-mono bg-surface-2 border border-border rounded-md px-2 py-2 text-sm outline-none focus:border-accent"
+            className="w-[105px] font-mono bg-surface-2 border border-border rounded-xl px-2 py-2 text-sm outline-none focus:border-accent"
           />
           <input
             type="text"
@@ -129,13 +129,13 @@ export default function TradeEntryModal({ open, onOpenChange, date, accountId, i
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             placeholder="Nota (opcional)"
-            className="flex-1 bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+            className="flex-1 bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
           />
         </div>
         <select
           value={strategyId}
           onChange={(e) => setStrategyId(e.target.value)}
-          className="w-full bg-surface-2 border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+          className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
         >
           <option value="">Sem estratégia</option>
           {strategies.map((s) => (
